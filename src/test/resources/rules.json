@@ -1,0 +1,26 @@
+[
+  {
+    "type":"contains",
+    "product_field":"manufacturer",
+    "listing_field":"manufacturer",
+    "weight":1
+  },
+  {
+    "type":"similar",
+    "product_field":"product_name",
+    "listing_field":"title",
+    "weight":1
+  },
+  {
+    "type":"similar",
+    "product_field":"family",
+    "listing_field":"title",
+    "weight":3
+  },
+  {
+    "type":"contains",
+    "product_field":"model",
+    "listing_field":"title",
+    "weight":4
+  }
+]
