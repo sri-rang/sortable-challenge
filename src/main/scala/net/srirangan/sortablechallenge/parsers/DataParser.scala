@@ -2,7 +2,7 @@ package net.srirangan.sortablechallenge.parsers
 
 import util.parsing.json.JSON
 
-object TestDataParser {
+object DataParser {
 
   def parse(lines: Iterator[String], forceSkipAtFive: Boolean = false): List[Any] = {
     var result: List[Any] = List()
