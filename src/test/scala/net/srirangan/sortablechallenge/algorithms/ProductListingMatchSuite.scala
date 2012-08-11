@@ -10,5 +10,9 @@ class ProductListingMatchSuite extends FunSuite with BeforeAndAfter {
 
   test("Match Products and Listings") {
     val matches: List[Map[String, Any]] = ProductListingMatch.execute(rulesPath, productsPath, listingsPath)
+
+    assert(matches.size > 0)
+
+    // Do your real assertions here
   }
 }

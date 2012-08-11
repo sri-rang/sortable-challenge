@@ -6,74 +6,113 @@ import util.parsing.json.JSON
 
 object ProductListingMatch {
 
+  var forceSkipAtFive: Boolean = false
+
+  var listingsByManufacturer: Map[String, List[Any]] = Map()
+
+  private def getListingsByManufacturer(manufacturer: String, listings: List[Any]): List[Any] = {
+    var filteredListings: List[Any] = List()
+    if (listingsByManufacturer.get(manufacturer) == None) {
+      filteredListings = listings.filter((listing: Any) => {
+        listing.asInstanceOf[Some[Map[String, Any]]].get("manufacturer") == manufacturer
+      })
+      listingsByManufacturer = listingsByManufacturer + ((manufacturer, filteredListings))
+    } else {
+      filteredListings = listingsByManufacturer.get(manufacturer).get
+    }
+    filteredListings
+  }
+
+  def smartContains(s1: String, s2: String): Boolean = {
+    var needle: String = ""
+    var haystack: String = ""
+    if (s1.size > s2.size) {
+      needle = s2
+      haystack = s1
+    } else {
+      needle = s1
+      haystack = s2
+    }
+    haystack.contains(needle)
+  }
+
   def execute(rulesPath: String, productsPath: String, listingsPath: String): List[Map[String, Any]] = {
+
+    var results: List[Map[String, Any]] = List()
 
     val rulesFile: BufferedSource = scala.io.Source.fromFile(rulesPath)
     val productsFile: BufferedSource = scala.io.Source.fromFile(productsPath)
     val listingsFile: BufferedSource = scala.io.Source.fromFile(listingsPath)
 
     val rules: Option[Any] = JSON.parseFull(rulesFile.mkString)
-    val products: List[Any] = DataParser.parse(productsFile.getLines())
-    val listings: List[Any] = DataParser.parse(listingsFile.getLines())
+    val products: List[Any] = DataParser.parse(productsFile.getLines(), forceSkipAtFive)
+    val listings: List[Any] = DataParser.parse(listingsFile.getLines(), forceSkipAtFive)
 
-    products.foreach((product: Any) => {
-      var productMap: Map[String, Any] = product.asInstanceOf[Some[Map[String, Any]]].get
-      var productsListings: List[Map[String, Any]] = List()
-      listings.foreach((listing: Any) => {
-        var listingMap: Map[String, Any] = listing.asInstanceOf[Some[Map[String, Any]]].get
+    products.foreach((productHolder) => {
+      val product = productHolder.asInstanceOf[Some[Map[String, Any]]].get
+      val productManufacturer: String = product.get("manufacturer").get.asInstanceOf[String]
+      var filteredListings: List[Any] = List()
+      val listingsMyManufacturer: List[Any] = getListingsByManufacturer(productManufacturer, listings)
+
+      listingsMyManufacturer.foreach((listingHolder) => {
+        var listing: Map[String, Any] = listingHolder.asInstanceOf[Some[Map[String, Any]]].get
+        var doesListingMatchCriticalRules = true
         var score: Double = 0.0
-        var passesRules = true
         rules.get.asInstanceOf[List[Map[String, Any]]].foreach((rule) => {
-          val rule_type: String = rule.get("type").get.asInstanceOf[String]
+          var doesListingMatchRule = true
+          val operation = rule.get("operation").get
+
           val product_field: String = rule.get("product_field").get.asInstanceOf[String]
           val listing_field: String = rule.get("listing_field").get.asInstanceOf[String]
+          val critical: Boolean = rule.get("critical").get.asInstanceOf[Boolean]
           val weight: Double = rule.get("weight").get.asInstanceOf[Double]
-          val product_field_exists = productMap.get(product_field).isDefined
-          val listing_field_exists = listingMap.get(listing_field).isDefined
+          val product_field_exists = product.get(product_field).isDefined
+          val listing_field_exists = listing.get(listing_field).isDefined
           var product_field_value: String = ""
           var listing_field_value: String = ""
-          if (product_field_exists) product_field_value = productMap.get(product_field).get.asInstanceOf[String].toLowerCase
-          if (listing_field_exists) listing_field_value = listingMap.get(listing_field).get.asInstanceOf[String].toLowerCase
-          if (product_field_exists && listing_field_exists) {
-            if (rule_type == "similar") {
-              score += (LetterPairSimilarity.compareStrings(product_field_value, listing_field_value) * weight)
-            } else if (rule_type == "contains") {
-              if (
-                (product_field_value.size == 0 || listing_field_value.size == 0)
-                  ||
-                  (!product_field_value.contains(listing_field_value) && !listing_field_value.contains(product_field_value))
-              ) {
-                passesRules = false
+          if (product_field_exists) product_field_value = product.get(product_field).get.asInstanceOf[String]
+          if (listing_field_exists) listing_field_value = listing.get(listing_field).get.asInstanceOf[String]
+
+          if (!product_field_exists || !listing_field_exists) {
+            doesListingMatchRule = false
+          } else {
+            doesListingMatchRule = operation match {
+              case "contains" => {
+                smartContains(product_field_value.toLowerCase, listing_field_value.toLowerCase)
               }
             }
-          } else {
-            passesRules = false
           }
+
+          if (!doesListingMatchRule) {
+            if (critical) {
+              doesListingMatchCriticalRules = false
+            }
+          } else {
+            score += weight
+          }
+
         })
-        if (passesRules && score > 0) {
-          listingMap = listingMap + (("score", score))
-          productsListings ::= listingMap
+        if (doesListingMatchCriticalRules) {
+          listing = listing + (("score", score))
+          filteredListings ::= Some(listing)
         }
       })
 
-      productsListings = productsListings.sortWith((l1: Map[String, Any], l2: Map[String, Any]) => {
-        l1.get("score").get.asInstanceOf[Double] > l2.get("score").get.asInstanceOf[Double]
-      })
+      if (filteredListings.size > 0) {
+        filteredListings = filteredListings.sortWith((l1: Any, l2: Any) => {
+          l1.asInstanceOf[Some[Map[String, Any]]].get.get("score").get.asInstanceOf[Double] > l2.asInstanceOf[Some[Map[String, Any]]].get.get("score").get.asInstanceOf[Double]
+        })
 
-      if (productsListings.size > 0) {
-        productMap = productMap + (("listings", productsListings.head))
-        println(productsListings.head.get("score"))
-        println(productsListings.head.get("title"))
-        println(productMap.get("manufacturer"), productMap.get("family"), productMap.get("model"), productMap.get("product_name"))
-        println()
+        var resultItem: Map[String, Any] = Map()
+        resultItem = resultItem + (("product_name", product.get("product_name")))
+        resultItem = resultItem + (("listings", filteredListings))
+
+        results ::= resultItem
       }
+
     })
 
-    rulesFile.close()
-    productsFile.close()
-    listingsFile.close()
-
-    null
+    results
   }
 
 }

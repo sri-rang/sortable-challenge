@@ -1,26 +1,37 @@
 [
   {
-    "type":"contains",
-    "product_field":"manufacturer",
     "listing_field":"manufacturer",
-    "weight":1
+    "operation":"contains",
+    "product_field":"manufacturer",
+    "critical":true,
+    "weight":10
   },
   {
-    "type":"similar",
-    "product_field":"product_name",
     "listing_field":"title",
-    "weight":1
+    "operation":"contains",
+    "product_field":"model",
+    "critical":true,
+    "weight":10
   },
   {
-    "type":"similar",
+    "listing_field":"title",
+    "operation":"contains",
     "product_field":"family",
+    "critical":false,
+    "weight":5
+  },
+  {
     "listing_field":"title",
+    "operation":"contains",
+    "product_field":"product_name",
+    "critical":false,
     "weight":3
   },
   {
-    "type":"contains",
-    "product_field":"model",
     "listing_field":"title",
-    "weight":4
+    "operation":"contains",
+    "product_field":"manufacturer",
+    "critical":false,
+    "weight":1
   }
 ]
