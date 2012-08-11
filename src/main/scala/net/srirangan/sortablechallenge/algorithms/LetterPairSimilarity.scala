@@ -5,7 +5,6 @@
 
 package net.srirangan.sortablechallenge.algorithms
 
-import scala.util.control.Breaks._
 
 object LetterPairSimilarity {
 
@@ -40,7 +39,7 @@ object LetterPairSimilarity {
   private def letterPairs(string: String): List[String] = {
     val numberOfPairs: Int = string.length - 1
     var pairs: List[String] = List()
-    for (i <- 0 to numberOfPairs-1) {
+    for (i <- 0 to numberOfPairs - 1) {
       pairs ::= string.substring(i, i + 2)
     }
     pairs
