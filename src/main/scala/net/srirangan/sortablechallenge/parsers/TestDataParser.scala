@@ -1,19 +1,15 @@
 package net.srirangan.sortablechallenge.parsers
 
+import util.parsing.json.JSON
+
 object TestDataParser {
 
-  def parse(filePath: String): List[String] = {
-    // Read file per line
-    // Convert line into map
-    // Append map to result list
-    // return
-    null
-  }
-
-  private def parseObject(string: String): Map[String, String] = {
-    // JSON object to map
-    // return
-    null
+  def parse(lines: Iterator[String]): List[Any] = {
+    var result: List[Any] = List()
+    lines.foreach((line: String) => {
+      result ::= JSON.parseFull(line)
+    })
+    result
   }
 
 }
