@@ -1,10 +1,23 @@
 My attempt at solving the sortable challenge. Happy to be trying Scala again after almost 10 months. :-)
 
-## What did I do?
+## How it works?
 
-* Downloaded and installed Scala, SBT, IntelliJ IDEA Scala plugin
-* Got hello world running from the SBT console
-*
+* Read rules, products and listings from data sources
+* For each product, get filtered listings by 'manufacturer', cache this in memory for performance
+    * For each listing, check rules
+    * If all critical rules pass, summate score for the listing and save
+    * Sort filtered listings by score
+    * Generate result object and add to results list
+* Return results list
+
+## Uh!?
+
+Yes, the real logic lies in the rules. Observations:
+
+* Manufactures must be the same, critical
+* product.model must be contained in the listing.title, critical
+* Extra points for product.name and product.family being contained in the listing.title
+* rules.json completely configuration for different object schemas
 
 ## Sortable Challenge
 
