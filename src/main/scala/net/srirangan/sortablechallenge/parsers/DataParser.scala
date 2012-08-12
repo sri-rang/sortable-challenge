@@ -4,11 +4,11 @@ import util.parsing.json.JSON
 
 object DataParser {
 
-  def parse(lines: Iterator[String], forceSkipAtFive: Boolean = false): List[Any] = {
+  def parse(lines: Iterator[String], limitResults: Boolean = false): List[Any] = {
     var result: List[Any] = List()
     lines.foreach((line: String) => {
       result ::= JSON.parseFull(line)
-      if (result.length == 5 && forceSkipAtFive) return result
+      if (result.length == 5 && limitResults) return result
     })
     result
   }

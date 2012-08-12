@@ -2,7 +2,7 @@ package net.srirangan.sortablechallenge.algorithms
 
 trait ProductListingMatchTrait {
 
-  protected var forceSkipAtFive: Boolean = false
+  protected var limitResults: Boolean = false
 
   protected var listingsByManufacturer: Map[String, List[Any]] = Map()
 
@@ -89,4 +89,6 @@ trait ProductListingMatchTrait {
     }
     filteredListings
   }
+
+  def execute(rulesPath: String, productsPath: String, listingsPath: String): List[Map[String, Any]]
 }
