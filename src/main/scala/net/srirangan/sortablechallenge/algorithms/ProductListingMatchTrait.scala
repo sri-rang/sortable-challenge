@@ -2,11 +2,11 @@ package net.srirangan.sortablechallenge.algorithms
 
 trait ProductListingMatchTrait {
 
-  protected var limitResults: Boolean = false
+  var limitResults: Boolean = false
 
-  protected var listingsByManufacturer: Map[String, List[Any]] = Map()
+  var listingsByManufacturer: Map[String, List[Any]] = Map()
 
-  protected def getFilteredListingsByManufacturer(manufacturer: String, listings: List[Any]): List[Any] = {
+  def getFilteredListingsByManufacturer(manufacturer: String, listings: List[Any]): List[Any] = {
     var filteredListings: List[Any] = List()
     if (listingsByManufacturer.get(manufacturer) == None) {
       filteredListings = listings.filter((listing: Any) => {
@@ -19,7 +19,7 @@ trait ProductListingMatchTrait {
     filteredListings
   }
 
-  protected def smartContains(s1: String, s2: String): Boolean = {
+  def smartContains(s1: String, s2: String): Boolean = {
     var needle: String = ""
     var haystack: String = ""
     if (s1.size > s2.size) {
@@ -32,7 +32,7 @@ trait ProductListingMatchTrait {
     haystack.contains(needle)
   }
 
-  protected def getResultItem(_filteredListings: scala.List[Any], product: Map[String, Any]): Map[String, Any] = {
+  def getResultItem(_filteredListings: scala.List[Any], product: Map[String, Any]): Map[String, Any] = {
     var filteredListings: scala.List[Any] = _filteredListings
     filteredListings = filteredListings.sortWith((l1: Any, l2: Any) => {
       l1.asInstanceOf[Some[Map[String, Any]]].get.get("score").get.asInstanceOf[Double] > l2.asInstanceOf[Some[Map[String, Any]]].get.get("score").get.asInstanceOf[Double]
@@ -44,7 +44,7 @@ trait ProductListingMatchTrait {
     resultItem
   }
 
-  protected def getFilteredListingsByRules(listingHolder: Any, rules: Option[Any], product: Map[String, Any]): List[Any] = {
+  def getFilteredListingsByRules(listingHolder: Any, rules: Option[Any], product: Map[String, Any]): List[Any] = {
     var filteredListings: List[Any] = List()
     var listing: Map[String, Any] = listingHolder.asInstanceOf[Some[Map[String, Any]]].get
     var doesListingMatchCriticalRules = true

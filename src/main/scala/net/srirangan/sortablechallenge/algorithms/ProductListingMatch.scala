@@ -17,9 +17,9 @@ object ProductListingMatch extends ProductListingMatchTrait {
     val listings: List[Any] = DataParser.parse(listingsFile.getLines(), limitResults)
 
     products.foreach((productHolder) => {
+      var filteredListings: List[Any] = List()
       val product = productHolder.asInstanceOf[Some[Map[String, Any]]].get
       val productManufacturer: String = product.get("manufacturer").get.asInstanceOf[String]
-      var filteredListings: List[Any] = List()
       val listingsMyManufacturer: List[Any] = getFilteredListingsByManufacturer(productManufacturer, listings)
 
       listingsMyManufacturer.foreach((listingHolder) => {
